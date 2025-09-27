@@ -1,12 +1,10 @@
 import { serve } from "inngest/next";
-import { inngest, syncUserCreation, syncuserDeleted, syncUserUpdation } from "@/config/inngest";
+import { inngest, syncUserCreation, syncUserDeleted, syncUserUpdation } from "@/config/inngest";
 
-// Create an API that serves zero functions
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [
-    syncUserCreation,
-    syncUserUpdation,
-    syncuserDeleted
-  ],
+  functions: [syncUserCreation, syncUserUpdation, syncUserDeleted],
 });
