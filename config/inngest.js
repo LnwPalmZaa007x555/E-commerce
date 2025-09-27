@@ -2,57 +2,56 @@ import { Inngest } from "inngest";
 import connectDB from "./db";
 import User from "@/models/user";
 
-// Create a client to send and receive events
+// Inngest client
 export const inngest = new Inngest({ id: "QuickCart-next" });
 
-// Inngest function to save user data to database
+// Create
 export const syncUserCreation = inngest.createFunction(
-    {
-        id:'sync-user-from-clerk'
-    },
-    { event: 'clerk/user.created' },
-    async ({event}) => {
-        const { id, first_name, last_name, email_addresses, image_url } = event.data
-        const userData = {
-            _id: id,
-            email: email_addresses[0].email_addresses,
-            name: first_name + ' ' + last_name,
-            imageUrl: image_url
-        }
-        await connectDB()
-        await User.creat(userData)
-    }
-)
+  { id: "sync-user-from-clerk" },
+  { event: "clerk/user.created" },
+  async ({ event }) => {
+    const d = event.data;
+    const email = d?.email_addresses?.[0]?.email_address ?? null;
 
-// Inngest function to update user data to database
+    const userData = {
+      _id: d.id,
+      email,
+      name: [d.first_name, d.last_name].filter(Boolean).join(" "),
+      imageUrl: d.image_url,
+    };
+
+    await connectDB();
+    // กันซ้ำ: ถ้ามีอยู่แล้วก็อัปเดต
+    await User.findByIdAndUpdate(d.id, { $set: userData }, { upsert: true, new: true });
+  }
+);
+
+// Update
 export const syncUserUpdation = inngest.createFunction(
-    {
-        id: 'update-user-from-clerk'
-    },
-    {event: 'clerk/user.updated'},
-    async ({event}) => {
-        const { id, first_name, last_name, email_addresses, image_url } = event.data
-        const userData = {
-            _id: id,
-            email: email_addresses[0].email_addresses,
-            name: first_name + ' ' + last_name,
-            imageUrl: image_url
-        }
-        await connectDB()
-        await User.findByIdAndUpdate(id,userData)
-    }
-)
+  { id: "update-user-from-clerk" },
+  { event: "clerk/user.updated" },
+  async ({ event }) => {
+    const d = event.data;
+    const email = d?.email_addresses?.[0]?.email_address ?? null;
 
-// inngest function to delete user from database
+    const userData = {
+      email,
+      name: [d.first_name, d.last_name].filter(Boolean).join(" "),
+      imageUrl: d.image_url,
+    };
+
+    await connectDB();
+    await User.findByIdAndUpdate(d.id, { $set: userData }, { new: true });
+  }
+);
+
+// Delete
 export const syncUserDeletion = inngest.createFunction(
-    {
-        id: 'delete-user-with-clerk'
-    },
-    {evnet: 'clerk/user.deleted'},
-    async ({event}) => {
-        const {id} = event.data
-
-        await connectDB()
-        await User.findByIdAndDelete()
-    }
-)
+  { id: "delete-user-with-clerk" },
+  { event: "clerk/user.deleted" },   // ← แก้ evnet -> event
+  async ({ event }) => {
+    const d = event.data;
+    await connectDB();
+    await User.findByIdAndDelete(d.id);  // ← ใส่ id
+  }
+);

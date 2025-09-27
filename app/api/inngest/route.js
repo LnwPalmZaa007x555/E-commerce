@@ -1,5 +1,5 @@
 import { serve } from "inngest/next";
-import { inngest, syncUserCreation, syncUserDeletion, syncUserUpdation } from "@/config/inngest";
+import { inngest, syncUserCreation, syncUserUpdation, syncUserDeletion } from "@/config/inngest";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
