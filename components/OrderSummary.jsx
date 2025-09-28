@@ -20,7 +20,7 @@ const OrderSummary = () => {
       })
       if (data.success) {
         setUserAddresses(data.addresses)
-        if (data.addresses.length > 0 ) {
+        if (data.addresses?.length ) {
           setSelectedAddress(data.addresses[0])
         }
       }else{
