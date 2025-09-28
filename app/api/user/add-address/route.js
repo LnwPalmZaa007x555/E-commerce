@@ -9,7 +9,7 @@ export async function POST(req) {
 
     try {
         
-        const {userId} = getAuth
+        const {userId} = getAuth(req)
         const {address} = await req.json()
 
         await connectDB()
