@@ -19,10 +19,11 @@ const OrderSummary = () => {
         headers:{Authorization:`Bearer ${token}`}
       })
       if (data.success) {
-        setUserAddresses(data.addresses)
-        if (data.addresses?.length ) {
-          setSelectedAddress(data.addresses[0])
-        }
+        const addresses = data.addresses ?? data.address ?? []; // เผื่อ API ใช้ชื่อ address
+        setUserAddresses(addresses);
+        
+      if (addresses.length > 0) 
+        setSelectedAddress(addresses[0]);
       }else{
         toast.error(data.message)
       }
@@ -55,7 +56,7 @@ const OrderSummary = () => {
 
       const { data } = await axios.post('/api/order/create',{
         address: selectedAddress._id,
-        item: cartItemArray
+        items: cartItemArray
       },{
         headers:{Authorization:`Bearer ${token}`}
       })
