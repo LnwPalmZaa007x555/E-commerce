@@ -4,21 +4,42 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import { useState } from "react";
+import { useAppContext } from "@/context/AppContext";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const AddAddress = () => {
+
+    const {getToken, router} = useAppContext()
 
     const [address, setAddress] = useState({
         fullName: '',
         phoneNumber: '',
         pincode: '',
         area: '',
-        city: '',
-        state: '',
+        district: '',
+        province: '',
     })
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
+        try {
+            
+            const token = await getToken()
 
+            const {data} = await axios.post('/api/user/add-address',{address},
+                {headers:{Authorization:`Bearer ${token}`}}
+            )
+            if (data.success) {
+                toast.success(data.message)
+                router.push('/cart')
+            }else{
+                toast.error(data.message)
+            }
+
+        } catch (error) {
+            toast.error(data.message)
+        }
     }
 
     return (
@@ -63,16 +84,16 @@ const AddAddress = () => {
                             <input
                                 className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
                                 type="text"
-                                placeholder="City/District/Town"
-                                onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                                value={address.city}
+                                placeholder="District"
+                                onChange={(e) => setAddress({ ...address, district: e.target.value })}
+                                value={address.district}
                             />
                             <input
                                 className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
                                 type="text"
-                                placeholder="State"
-                                onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                                value={address.state}
+                                placeholder="Province"
+                                onChange={(e) => setAddress({ ...address, province: e.target.value })}
+                                value={address.province}
                             />
                         </div>
                     </div>

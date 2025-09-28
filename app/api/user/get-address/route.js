@@ -1,23 +1,22 @@
 import connectDB from "@/config/db";
-import User from "@/models/user";
+import Address from "@/models/address";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 
-export async function POST(req) {
+export async function GET(req) {
     try {
         
         const {userId} = getAuth(req)
 
-        const {cartData} = await req.json()
-
         await connectDB()
-        const user = await User.findById(userId)
 
-        user.cartItems = cartData
-        await user.save()
+        const addresses = await Address.find({userId})
 
-        return NextResponse.json({success:true})
+        return NextResponse.json({
+            success:true,
+            addresses
+        })
 
     } catch (error) {
         return NextResponse.json({
@@ -25,4 +24,5 @@ export async function POST(req) {
             message:error.message
         })
     }
+    
 }
