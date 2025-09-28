@@ -27,7 +27,19 @@ export const AppContextProvider = (props) => {
     const [cartItems, setCartItems] = useState({})
 
     const fetchProductData = async () => {
-        setProducts(productsDummyData)
+        try {
+
+            const {data} = await axios.get('/api/product/list')
+
+            if (data.success) {
+                setProducts(data.products)
+            }else{
+                toast.error(data.message)
+            }
+
+        } catch (error) {
+            toast.error(error.message)
+        }
     }
 
     const fetchUserData = async () => {
@@ -38,13 +50,17 @@ export const AppContextProvider = (props) => {
 
         const token = await getToken()
 
-        const { data } = await axios.get('/api/user/data');  // ไม่ต้องส่ง header ก็ได้
-    if (data.success) {
-      setUserData(data.user);
-      setCartItems(data.user?.cartItems ?? {});
-    } else {
-      toast.error(data.message);
-    }
+        const {data} = await axios.get('/api/user/data',{ 
+            headers: { Authorization:`Bearer ${token}` }
+        })
+
+        if (data.success) {
+            setUserData(data.user)
+            setCartItems(data.user.cartItems)
+        } else{
+            toast.error(data.message)
+        }
+
 
         } catch(error){
             toast.error(data.message)
@@ -62,7 +78,19 @@ export const AppContextProvider = (props) => {
             cartData[itemId] = 1;
         }
         setCartItems(cartData);
+        
+        if (user) {
+            try {
+                const token = await getToken()
 
+                await axios.post('/api/cart/update',{cartData},
+                    {headers:{Authorization:`Bearer ${token}`}})
+                
+                toast.success('Item added to cart')
+            } catch (error) {
+                toast.error(error.message)
+            }
+        }
     }
 
     const updateCartQuantity = async (itemId, quantity) => {
@@ -74,7 +102,18 @@ export const AppContextProvider = (props) => {
             cartData[itemId] = quantity;
         }
         setCartItems(cartData)
+        if (user) {
+            try {
+                const token = await getToken()
 
+                await axios.post('/api/cart/update',{cartData},
+                    {headers:{Authorization:`Bearer ${token}`}})
+                
+                toast.success('Cart updated')
+            } catch (error) {
+                toast.error(error.message)
+            }
+        }
     }
 
     const getCartCount = () => {
